@@ -44,6 +44,7 @@
       background: #ece6dd;
       display: flex;
       justify-content: center;
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -333,15 +334,15 @@
     .field textarea { resize: vertical; line-height: 1.6; min-height: 84px; }
     .field .hint { font-size: .72rem; color: var(--ink-faint); margin-top: 6px; font-weight: 300; }
 
-    /* 追加画面：2カラムレイアウト（mock準拠） */
+    /* 追加画面：基本は1カラム。画面が広いときだけ2カラム（mock準拠） */
     .reg-grid {
       display: grid;
-      grid-template-columns: 230px 1fr;
+      grid-template-columns: 1fr;
       gap: 22px;
       align-items: start;
     }
-    @media (max-width: 540px) {
-      .reg-grid { grid-template-columns: 1fr; }
+    @media (min-width: 600px) {
+      .reg-grid { grid-template-columns: 230px 1fr; }
     }
     .uploader { display: flex; flex-direction: column; }
     .form-col { min-width: 0; }
