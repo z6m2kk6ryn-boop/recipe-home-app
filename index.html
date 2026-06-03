@@ -553,6 +553,7 @@
     .tag-add-row { display: flex; gap: 8px; margin-bottom: 6px; }
     .tag-add-row input {
       flex: 1;
+      min-width: 0;
       border: 1px solid var(--border);
       border-radius: 11px;
       padding: 11px 13px;
@@ -672,7 +673,7 @@
     </section>
 
     <!-- ===== 画面2：レシピ追加/編集 ===== -->
-    <section id="screen-add" class="screen">
+    <section id="screen-add" class="screen with-tabbar">
       <div class="navbar">
         <button class="icon-btn" onclick="closeForm()">← 戻る</button>
         <div class="nav-title" id="form-title">レシピを追加</div>
