@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Récipe">
+  <title>Récipe</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --cream: #F7F3EE;
+      --warm-white: #FDFAF7;
+      --ink: #1C1A17;
+      --ink-soft: #4A4540;
+      --ink-faint: #9A948C;
+      --accent: #C8553D;
+      --accent-light: #F0E8E5;
+      --sage: #7A9E7E;
+      --sage-light: #EAF1EA;
+      --border: #E8E2D9;
+
+      --tabbar-h: 64px;
+      --radius: 16px;
+      --shadow: 0 1px 2px rgba(28,26,23,.04), 0 8px 24px rgba(28,26,23,.06);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+    }
+    body {
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 400;
+      color: var(--ink);
+      background: #ece6dd;
+      display: flex;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      height: 100dvh;
+      background: var(--cream);
+      overflow: hidden;
+    }
+
+    /* ===== 画面（スクリーン）共通 ===== */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity .28s ease, transform .28s ease;
+    }
+    .screen.active {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+    .screen.detail-anim {
+      transform: translateX(28px);
+    }
+    .screen.detail-anim.active {
+      transform: none;
+    }
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .with-tabbar .scroll { padding-bottom: calc(var(--tabbar-h) + 16px); }
+
+    /* ===== ナビバー ===== */
+    .navbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      padding-top: max(14px, env(safe-area-inset-top));
+      background: var(--cream);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .navbar .nav-title {
+      flex: 1;
+      text-align: center;
+      font-weight: 500;
+      font-size: 1rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .icon-btn {
+      border: none;
+      background: transparent;
+      font-size: .95rem;
+      color: var(--ink-soft);
+      padding: 6px 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+    }
+    .nav-save {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .nav-spacer { width: 56px; }
+
+    /* ===== ホーム ===== */
+    .home-head {
+      padding: 18px 16px 6px;
+      padding-top: max(18px, env(safe-area-inset-top));
+    }
+    .home-title {
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: .01em;
+      margin: 0 0 14px;
+    }
+    .search-row { display: flex; gap: 8px; align-items: stretch; }
+    .search-row .search { flex: 1; }
+    .sync-btn {
+      flex: none;
+      border: 1px solid var(--border);
+      background: var(--warm-white);
+      color: var(--ink-soft);
+      border-radius: 12px;
+      padding: 0 13px;
+      font-family: inherit;
+      font-size: .8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .sync-btn:active { background: var(--accent-light); }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 13px;
+    }
+    .search svg { flex: none; color: var(--ink-faint); }
+    .search input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      font-size: .92rem;
+      color: var(--ink);
+      width: 100%;
+    }
+    .search input::placeholder { color: var(--ink-faint); }
+
+    .filterbar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 14px 16px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .filterbar::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex: none;
+      border: 1px solid var(--border);
+      background: var(--warm-white);
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: .82rem;
+      font-weight: 400;
+      white-space: nowrap;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s ease;
+    }
+    .filter-chip.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .recipe-list {
+      padding: 4px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .recipe-card {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      background: var(--warm-white);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform .12s ease;
+      border-left: 6px solid transparent;
+    }
+    .recipe-card:active { transform: scale(.985); }
+    .recipe-card.todo { border-left-color: var(--accent); }
+    .thumb {
+      flex: none;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      overflow: hidden;
+    }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .card-main { flex: 1; min-width: 0; }
+    .card-title {
+      font-weight: 500;
+      font-size: 1rem;
+      margin: 0 0 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-ing {
+      color: var(--ink-faint);
+      font-size: .8rem;
+      font-weight: 300;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0 0 7px;
+    }
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .tag-chip {
+      font-size: .7rem;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--ink-faint);
+      font-weight: 300;
+      padding: 60px 20px;
+      font-size: .9rem;
+    }
+
+    /* ===== タブバー ===== */
+    .tabbar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      display: flex;
+      background: rgba(253,250,247,.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      z-index: 30;
+      transition: transform .3s ease;
+    }
+    .tabbar.hidden { transform: translateY(110%); }
+    .tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--ink-faint);
+      font-family: inherit;
+      font-size: .68rem;
+      font-weight: 400;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding-top: 8px;
+    }
+    .tab .ic { font-size: 1.2rem; line-height: 1; }
+    .tab.on { color: var(--accent); font-weight: 500; }
+
+    /* ===== フォーム（追加/編集） ===== */
+    .form-body { padding: 4px 16px 24px; }
+    .field { margin-bottom: 18px; }
+    .field > label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+    }
+    .field .req { color: var(--accent); margin-left: 2px; }
+    .field input[type=text],
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-family: inherit;
+      font-size: .92rem;
+      background: var(--warm-white);
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s ease;
+    }
+    .field input[type=text]:focus,
+    .field textarea:focus { border-color: var(--accent); }
+    .field textarea { resize: vertical; line-height: 1.6; min-height: 84px; }
+    .field .hint { font-size: .72rem; color: var(--ink-faint); margin-top: 6px; font-weight: 300; }
+
+    /* 追加画面：2カラムレイアウト（mock準拠） */
+    .reg-grid {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    @media (max-width: 540px) {
+      .reg-grid { grid-template-columns: 1fr; }
+    }
+    .uploader { display: flex; flex-direction: column; }
+    .form-col { min-width: 0; }
+    .reg-save {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+    .btn-save { background: var(--accent); color: #fff; padding: 12px 28px; font-size: .9rem; }
+    .btn-cancel-o {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      color: var(--ink-soft);
+      padding: 12px 20px;
+      font-size: .9rem;
+    }
+
+    /* 料理写真／スクショ共通の小型ドロップゾーン */
+    .photo-zone {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      background: var(--warm-white);
+      padding: 22px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--ink-faint);
+      font-size: .8rem;
+      font-weight: 300;
+      text-align: center;
+      line-height: 1.5;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .photo-zone .ic { font-size: 1.6rem; }
+    .photo-zone.filled { border-style: solid; padding: 0; height: 130px; cursor: default; }
+    .photo-zone img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .remove-x {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(28,26,23,.6);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+
+    /* タグピッカー */
+    .tag-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pick-chip {
+      border: 1px solid var(--border);
+      background: var(--warm-white);
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: .8rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .pick-chip.on {
+      border-color: transparent;
+      font-weight: 500;
+    }
+    .manage-tags-btn {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--ink-soft);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-family: inherit;
+      font-size: .82rem;
+      cursor: pointer;
+    }
+
+    /* ===== 詳細 ===== */
+    .detail-photo {
+      width: 100%;
+      height: 200px;
+      border-radius: 20px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4.5rem;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .detail-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 2rem;
+      line-height: 1.2;
+      margin: 0 0 12px;
+    }
+    .detail-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 8px; }
+
+    .sec-title {
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 26px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sec-title::before {
+      content: "";
+      width: 4px; height: 17px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .ing-item {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: .9rem;
+    }
+    .ing-item .amt { color: var(--ink-faint); font-weight: 300; flex: none; }
+    .step-item {
+      display: flex;
+      gap: 13px;
+      margin-bottom: 16px;
+    }
+    .step-item .n {
+      flex: none;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: .8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-item .txt { font-size: .92rem; line-height: 1.65; padding-top: 2px; }
+    .memo-box {
+      background: var(--warm-white);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 16px;
+      font-size: .9rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink-soft);
+    }
+
+    .detail-actions { margin: 28px 0 8px; }
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .btn-sm {
+      flex: 1;
+      padding: 11px;
+      font-size: .85rem;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      color: var(--ink-soft);
+    }
+    .btn-sm.danger { color: var(--accent); }
+    .btn-cook {
+      width: 100%;
+      padding: 15px;
+      font-size: .95rem;
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-cook.done { background: var(--sage); }
+
+    /* ===== タグ管理（画面＆モーダル共通） ===== */
+    .tagmgr-wrap { padding: 4px 0; }
+    .tag-add-row { display: flex; gap: 8px; margin-bottom: 6px; }
+    .tag-add-row input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 13px;
+      font-family: inherit;
+      font-size: .92rem;
+      background: var(--warm-white);
+      outline: none;
+    }
+    .tag-add-row input:focus { border-color: var(--accent); }
+    .tag-add-row button {
+      flex: none;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: 0 18px;
+      font-family: inherit;
+      font-weight: 500;
+      font-size: .88rem;
+      cursor: pointer;
+    }
+    .tag-error {
+      color: var(--accent);
+      font-size: .76rem;
+      min-height: 16px;
+      margin: 0 0 12px 2px;
+    }
+    .tag-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 9px;
+    }
+    .tag-dot { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+    .tag-name { flex: 1; font-size: .92rem; font-weight: 400; }
+    .tag-row .icon-btn { font-size: .95rem; padding: 4px 6px; }
+    .tag-edit-input {
+      flex: 1;
+      border: 1px solid var(--accent);
+      border-radius: 9px;
+      padding: 7px 10px;
+      font-family: inherit;
+      font-size: .9rem;
+      outline: none;
+    }
+
+    /* ===== シート/モーダル ===== */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(28,26,23,.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s ease;
+      z-index: 40;
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--cream);
+      border-radius: 22px 22px 0 0;
+      padding: 10px 18px calc(20px + env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform .32s cubic-bezier(.32,.72,0,1);
+      z-index: 41;
+      max-height: 86%;
+      display: flex;
+      flex-direction: column;
+    }
+    .sheet.open { transform: translateY(0); }
+    .sheet-grip {
+      width: 38px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 4px auto 14px;
+      flex: none;
+    }
+    .sheet-title { font-size: 1.05rem; font-weight: 500; margin: 0 0 14px; }
+    .sheet-scroll { overflow-y: auto; }
+    .sheet-text { font-size: .9rem; font-weight: 300; color: var(--ink-soft); line-height: 1.6; margin: 0 0 18px; }
+    .sheet-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-block {
+      width: 100%;
+      padding: 14px;
+      font-size: .95rem;
+      border-radius: 12px;
+    }
+    .btn-danger { background: var(--accent); color: #fff; }
+    .btn-cancel { background: var(--warm-white); border: 1px solid var(--border); color: var(--ink-soft); }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== 画面1：ホーム ===== -->
+    <section id="screen-home" class="screen with-tabbar active">
+      <div class="scroll">
+        <div class="home-head">
+          <h1 class="home-title">レシピ</h1>
+          <div class="search-row">
+            <div class="search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+              <input id="search-input" type="text" placeholder="料理名・食材・メモで検索">
+            </div>
+            <button class="sync-btn" onclick="syncFromServer()">📥 同期</button>
+          </div>
+        </div>
+        <div class="filterbar" id="filterbar"></div>
+        <div class="recipe-list" id="recipe-list"></div>
+      </div>
+    </section>
+
+    <!-- ===== 画面2：レシピ追加/編集 ===== -->
+    <section id="screen-add" class="screen">
+      <div class="navbar">
+        <button class="icon-btn" onclick="closeForm()">← 戻る</button>
+        <div class="nav-title" id="form-title">レシピを追加</div>
+        <div class="nav-spacer"></div>
+      </div>
+      <div class="scroll">
+        <div class="form-body">
+          <div class="reg-grid">
+            <!-- 左：画像アップロード -->
+            <div class="uploader">
+              <div class="field">
+                <label>料理写真（1枚のみ）</label>
+                <div class="photo-zone" id="photo-zone" onclick="pickPhoto()">
+                  <div class="ic">📷</div>
+                  <div>ドラッグ＆ドロップ<br>または クリックで選択</div>
+                </div>
+                <input type="file" id="photo-input" accept="image/*" hidden>
+              </div>
+            </div>
+
+            <!-- 右：フォーム -->
+            <div class="form-col">
+              <div class="field">
+                <label>料理名<span class="req">*</span></label>
+                <input type="text" id="f-title" placeholder="例：鶏むね肉の照り焼き">
+              </div>
+              <div class="field">
+                <label>材料</label>
+                <textarea id="f-ing" placeholder="1行に1つ（例：鶏むね肉 1枚）"></textarea>
+              </div>
+              <div class="field">
+                <label>手順</label>
+                <textarea id="f-steps" placeholder="1行に1つ"></textarea>
+              </div>
+              <div class="field">
+                <label>メモ</label>
+                <textarea id="f-memo" placeholder="コツ・ポイントなど"></textarea>
+              </div>
+              <div class="field">
+                <label>タグ（最大3つ）</label>
+                <div class="tag-picker" id="tag-picker"></div>
+                <button class="manage-tags-btn" onclick="openTagModal()">＋ タグ管理</button>
+              </div>
+              <div class="reg-save">
+                <button class="btn btn-cancel-o" onclick="closeForm()">キャンセル</button>
+                <button class="btn btn-save" onclick="saveForm()">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 画面3：レシピ詳細 ===== -->
+    <section id="screen-detail" class="screen detail-anim">
+      <div class="navbar">
+        <button class="icon-btn" onclick="go('home')">← 戻る</button>
+        <div class="nav-title" id="detail-nav-title"></div>
+        <div class="nav-spacer"></div>
+      </div>
+      <div class="scroll">
+        <div class="form-body" id="detail-body"></div>
+      </div>
+    </section>
+
+    <!-- ===== 画面4：タグ管理 ===== -->
+    <section id="screen-tags" class="screen with-tabbar">
+      <div class="home-head">
+        <h1 class="home-title">タグ管理</h1>
+      </div>
+      <div class="scroll">
+        <div class="form-body">
+          <div id="tagmgr-page"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== タブバー ===== -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab on" data-tab="home" onclick="go('home')"><span class="ic">🍳</span>レシピ</button>
+      <button class="tab" data-tab="add" onclick="openAdd()"><span class="ic">＋</span>追加</button>
+      <button class="tab" data-tab="tags" onclick="go('tags')"><span class="ic">🏷</span>タグ管理</button>
+    </nav>
+
+    <!-- ===== オーバーレイ＆シート ===== -->
+    <div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
+
+    <!-- タグ管理モーダル -->
+    <div class="sheet" id="tag-sheet">
+      <div class="sheet-grip"></div>
+      <h3 class="sheet-title">タグ管理</h3>
+      <div class="sheet-scroll">
+        <div id="tagmgr-modal"></div>
+      </div>
+    </div>
+
+    <!-- レシピ削除確認シート -->
+    <div class="sheet" id="del-recipe-sheet">
+      <div class="sheet-grip"></div>
+      <h3 class="sheet-title">レシピを削除しますか？</h3>
+      <p class="sheet-text" id="del-recipe-text"></p>
+      <div class="sheet-actions">
+        <button class="btn btn-block btn-danger" onclick="confirmDeleteRecipe()">削除する</button>
+        <button class="btn btn-block btn-cancel" onclick="closeAllSheets()">キャンセル</button>
+      </div>
+    </div>
+
+    <!-- タグ削除確認シート -->
+    <div class="sheet" id="del-tag-sheet">
+      <div class="sheet-grip"></div>
+      <h3 class="sheet-title">タグを削除しますか？</h3>
+      <p class="sheet-text" id="del-tag-text"></p>
+      <div class="sheet-actions">
+        <button class="btn btn-block btn-danger" onclick="confirmDeleteTag()">削除する</button>
+        <button class="btn btn-block btn-cancel" onclick="closeAllSheets()">キャンセル</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    'use strict';
+
+    /* ====== タグカラーパレット ====== */
+    const TAG_PALETTES = [
+      { bg: '#EAF1EA', color: '#7A9E7E' },
+      { bg: '#FEF0E7', color: '#D4732A' },
+      { bg: '#EEF2FF', color: '#5B6EE8' },
+      { bg: '#FFF0F3', color: '#D45B72' },
+      { bg: '#F5F0FF', color: '#8B5CF6' },
+      { bg: '#FFF8E7', color: '#C9A84C' },
+      { bg: '#E8F4FD', color: '#2E86AB' },
+      { bg: '#FDE8F0', color: '#C2456A' },
+    ];
+    const paletteOf = (colorIndex) => TAG_PALETTES[colorIndex % 8];
+
+    /* ====== localStorage 永続化 ====== */
+    const LS_RECIPES = 'recipes';
+    const LS_TAGS = 'tags';
+
+    function loadRecipes() {
+      try { return JSON.parse(localStorage.getItem(LS_RECIPES)) || []; }
+      catch (e) { return []; }
+    }
+    function saveRecipes() { localStorage.setItem(LS_RECIPES, JSON.stringify(recipes)); }
+    function loadTags() {
+      try { return JSON.parse(localStorage.getItem(LS_TAGS)) || []; }
+      catch (e) { return []; }
+    }
+    function saveTags() { localStorage.setItem(LS_TAGS, JSON.stringify(tags)); }
+
+    let recipes = loadRecipes();
+    let tags = loadTags();
+
+    /* ====== 料理写真のセッション管理（localStorageには保存しない） ====== */
+    // { recipeId: ObjectURL } の形で保持。リロードで失われ、🍽絵文字にフォールバックする。
+    const sessionImages = {};
+
+    /* ====== 状態 ====== */
+    let activeFilters = new Set();      // ホームのタグ絞り込み（AND）
+    let searchText = '';
+    let currentScreen = 'home';
+    let currentRecipeId = null;         // 詳細表示中
+    let editingRecipeId = null;         // フォーム編集中（nullなら新規）
+    let formSelectedTags = [];          // フォームで選択中のタグ名
+    let editingTagIndex = null;         // タグのインライン編集中インデックス
+    let pendingDeleteTagIndex = null;
+    let sessionPhoto = null;            // フォーム編集中の料理写真 ObjectURL（一時）
+    let addFormCache = null;            // タグ管理モーダル表示中のフォーム退避
+
+    /* ====== 画面遷移 ====== */
+    const TAB_OF = { home: 'home', tags: 'tags', add: 'add' };
+    function go(screen) {
+      currentScreen = screen;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + screen).classList.add('active');
+
+      const tabbar = document.getElementById('tabbar');
+      const showTab = (screen === 'home' || screen === 'tags' || screen === 'add');
+      tabbar.classList.toggle('hidden', !showTab);
+
+      document.querySelectorAll('.tab').forEach(t =>
+        t.classList.toggle('on', t.dataset.tab === TAB_OF[screen]));
+    }
+
+    /* ====== ホーム描画 ====== */
+    function renderFilterBar() {
+      const bar = document.getElementById('filterbar');
+      let html = `<button class="filter-chip ${activeFilters.size === 0 ? 'on' : ''}" onclick="clearFilters()">すべて</button>`;
+      html += tags.map(t => {
+        const on = activeFilters.has(t.name);
+        const p = paletteOf(t.colorIndex);
+        const style = on ? '' : `style="color:${p.color}"`;
+        return `<button class="filter-chip ${on ? 'on' : ''}" ${style} onclick="toggleFilter('${escAttr(t.name)}')">${escHtml(t.name)}</button>`;
+      }).join('');
+      bar.innerHTML = html;
+    }
+
+    function renderRecipes() {
+      const list = document.getElementById('recipe-list');
+      const q = searchText.trim().toLowerCase();
+      const filtered = recipes.filter(r => {
+        // タグAND絞り込み
+        for (const f of activeFilters) if (!r.tags.includes(f)) return false;
+        // テキスト部分一致（料理名・食材・メモ）
+        if (q) {
+          const hay = (r.title + ' ' + r.ingredients.join(' ') + ' ' + (r.memo || '')).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      // createdAt降順で並べ替え
+      filtered.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty">該当するレシピがありません</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(r => {
+        const tagsHtml = r.tags.map(name => tagChipHtml(name)).join('');
+        const ing = r.ingredients.join('・');
+        const img = sessionImages[r.id];
+        const thumb = img ? `<img src="${img}" alt="">` : '🍽';
+        return `
+          <div class="recipe-card ${r.cooked ? '' : 'todo'}" onclick="openDetail('${r.id}')">
+            <div class="thumb">${thumb}</div>
+            <div class="card-main">
+              <p class="card-title">${escHtml(r.title)}</p>
+              <p class="card-ing">${escHtml(ing)}</p>
+              <div class="card-tags">${tagsHtml}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function tagChipHtml(name) {
+      const t = tags.find(t => t.name === name);
+      const p = t ? paletteOf(t.colorIndex) : { bg: '#eee', color: '#888' };
+      return `<span class="tag-chip" style="background:${p.bg};color:${p.color}">${escHtml(name)}</span>`;
+    }
+
+    function toggleFilter(name) {
+      activeFilters.has(name) ? activeFilters.delete(name) : activeFilters.add(name);
+      renderFilterBar(); renderRecipes();
+    }
+    function clearFilters() { activeFilters.clear(); renderFilterBar(); renderRecipes(); }
+
+    /* ====== 詳細 ====== */
+    function openDetail(id) {
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      currentRecipeId = id;
+      document.getElementById('detail-nav-title').textContent = r.title;
+
+      const ingHtml = r.ingredients.map(line => {
+        const idx = line.lastIndexOf(' ');
+        let name = line, amt = '';
+        if (idx > 0) { name = line.slice(0, idx); amt = line.slice(idx + 1); }
+        return `<div class="ing-item"><span>${escHtml(name)}</span><span class="amt">${escHtml(amt)}</span></div>`;
+      }).join('');
+
+      const stepsHtml = r.steps.map((s, i) =>
+        `<div class="step-item"><span class="n">${i + 1}</span><span class="txt">${escHtml(s)}</span></div>`).join('');
+
+      const tagsHtml = r.tags.map(name => tagChipHtml(name)).join('');
+
+      const photo = sessionImages[r.id];
+      document.getElementById('detail-body').innerHTML = `
+        <div class="detail-photo">${photo ? `<img src="${photo}" alt="">` : '🍽'}</div>
+        <h2 class="detail-title">${escHtml(r.title)}</h2>
+        <div class="detail-tags">${tagsHtml}</div>
+
+        <div class="sec-title">材料</div>
+        ${ingHtml || '<p class="hint">材料がありません</p>'}
+
+        <div class="sec-title">手順</div>
+        ${stepsHtml || '<p class="hint">手順がありません</p>'}
+
+        ${r.memo ? `<div class="sec-title">メモ</div><div class="memo-box">${escHtml(r.memo)}</div>` : ''}
+
+        <div class="detail-actions">
+          <div class="action-row">
+            <button class="btn btn-sm" onclick="openEdit('${r.id}')">✏️ 編集</button>
+            <button class="btn btn-sm danger" onclick="openDeleteRecipe('${r.id}')">🗑 削除</button>
+          </div>
+          <button class="btn btn-cook ${r.cooked ? 'done' : ''}" onclick="toggleCooked('${r.id}')">
+            ${r.cooked ? '✅ 作済み' : '👨‍🍳 作った'}
+          </button>
+        </div>`;
+
+      go('detail');
+    }
+
+    function toggleCooked(id) {
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      r.cooked = !r.cooked;
+      r.updatedAt = new Date().toISOString();
+      saveRecipes();
+      openDetail(id);   // 再描画（ボタン表示更新）
+      renderRecipes();  // ホームの白背景/ボーダーも更新
+    }
+
+    /* ====== 追加/編集フォーム ====== */
+    // 現在のフォーム内容を取得する
+    function getAddFormData() {
+      return {
+        title: document.getElementById('f-title').value,
+        ingredients: document.getElementById('f-ing').value,
+        steps: document.getElementById('f-steps').value,
+        memo: document.getElementById('f-memo').value,
+        tags: [...formSelectedTags],
+        photo: sessionPhoto,
+      };
+    }
+    // フォームにデータを復元する
+    function restoreAddForm(data) {
+      document.getElementById('f-title').value = data.title || '';
+      document.getElementById('f-ing').value = data.ingredients || '';
+      document.getElementById('f-steps').value = data.steps || '';
+      document.getElementById('f-memo').value = data.memo || '';
+      // 削除済みのタグは除外して復元する
+      formSelectedTags = (data.tags || []).filter(name => tags.some(t => t.name === name));
+      sessionPhoto = data.photo || null;
+      renderPhotoZone(); renderTagPicker();
+    }
+
+    function openAdd() {
+      editingRecipeId = null;
+      document.getElementById('form-title').textContent = 'レシピを追加';
+      restoreAddForm({});   // 空のフォーム
+      go('add');
+    }
+
+    function openEdit(id) {
+      const r = recipes.find(x => x.id === id);
+      if (!r) return;
+      editingRecipeId = id;
+      document.getElementById('form-title').textContent = 'レシピを編集';
+      restoreAddForm({
+        title: r.title,
+        ingredients: r.ingredients.join('\n'),
+        steps: r.steps.join('\n'),
+        memo: r.memo || '',
+        tags: [...r.tags],
+        photo: sessionImages[id] || null,
+      });
+      go('add');
+    }
+
+    function closeForm() {
+      // 詳細から編集に来た場合は詳細へ、それ以外はホームへ
+      if (editingRecipeId) { openDetail(editingRecipeId); }
+      else { go('home'); }
+    }
+
+    function saveForm() {
+      const data = getAddFormData();
+      const title = data.title.trim();
+      if (!title) { alert('料理名を入力してください'); return; }
+
+      const ingredients = data.ingredients.split('\n').map(s => s.trim()).filter(Boolean);
+      const steps = data.steps.split('\n').map(s => s.trim()).filter(Boolean);
+      const now = new Date().toISOString();
+
+      let savedId;
+      if (editingRecipeId) {
+        // 編集保存：既存IDを保持し、updatedAtのみ更新
+        const r = recipes.find(x => x.id === editingRecipeId);
+        if (r) {
+          r.title = title;
+          r.ingredients = ingredients;
+          r.steps = steps;
+          r.memo = data.memo.trim();
+          r.tags = [...formSelectedTags];
+          r.updatedAt = now;
+          savedId = r.id;
+        }
+      } else {
+        // 新規保存
+        savedId = `recipe_${Date.now()}_${Math.random()}`;
+        recipes.push({
+          id: savedId,
+          title,
+          ingredients,
+          steps,
+          memo: data.memo.trim(),
+          tags: [...formSelectedTags],
+          cooked: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      // 料理写真はlocalStorageには保存せず、セッション中のみ保持する
+      if (data.photo) { sessionImages[savedId] = data.photo; }
+      else { delete sessionImages[savedId]; }
+
+      saveRecipes();
+      renderRecipes();
+
+      editingRecipeId = null;
+      openDetail(savedId);   // 保存後は詳細を表示
+    }
+
+    function renderTagPicker() {
+      const el = document.getElementById('tag-picker');
+      el.innerHTML = tags.map(t => {
+        const on = formSelectedTags.includes(t.name);
+        const p = paletteOf(t.colorIndex);
+        const style = on ? `style="background:${p.bg};color:${p.color}"` : '';
+        return `<button class="pick-chip ${on ? 'on' : ''}" ${style} onclick="toggleFormTag('${escAttr(t.name)}')">${escHtml(t.name)}</button>`;
+      }).join('') || '<span class="hint">タグがありません</span>';
+    }
+
+    function toggleFormTag(name) {
+      const i = formSelectedTags.indexOf(name);
+      if (i >= 0) { formSelectedTags.splice(i, 1); }
+      else {
+        if (formSelectedTags.length >= 3) { alert('タグは最大3つまでです'); return; }
+        formSelectedTags.push(name);
+      }
+      renderTagPicker();
+    }
+
+    /* ====== 画像アップロード（プレビューのみ・保存なし） ====== */
+    function pickPhoto() { if (!sessionPhoto) document.getElementById('photo-input').click(); }
+    document.getElementById('photo-input').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      sessionPhoto = URL.createObjectURL(file);
+      renderPhotoZone();
+      e.target.value = '';
+    });
+    function removePhoto(e) { e.stopPropagation(); sessionPhoto = null; renderPhotoZone(); }
+    function renderPhotoZone() {
+      const z = document.getElementById('photo-zone');
+      if (sessionPhoto) {
+        z.classList.add('filled');
+        z.innerHTML = `<img src="${sessionPhoto}"><button class="remove-x" onclick="removePhoto(event)">×</button>`;
+      } else {
+        z.classList.remove('filled');
+        z.innerHTML = `<div class="ic">📷</div><div>ドラッグ＆ドロップ または タップで選択</div>`;
+      }
+    }
+
+    /* ====== タグ管理（画面＆モーダル共通描画） ====== */
+    function buildTagManager(containerId) {
+      const c = document.getElementById(containerId);
+      const rows = tags.map((t, i) => {
+        const p = paletteOf(t.colorIndex);
+        if (editingTagIndex === i) {
+          return `<div class="tag-row">
+            <span class="tag-dot" style="background:${p.color}"></span>
+            <input class="tag-edit-input" id="tag-edit-${containerId}" value="${escAttr(t.name)}">
+            <button class="icon-btn" onclick="saveTagEdit(${i}, '${containerId}')">保存</button>
+            <button class="icon-btn" onclick="cancelTagEdit()">キャンセル</button>
+          </div>`;
+        }
+        return `<div class="tag-row">
+          <span class="tag-dot" style="background:${p.color}"></span>
+          <span class="tag-name">${escHtml(t.name)}</span>
+          <button class="icon-btn" onclick="startTagEdit(${i})">✏️</button>
+          <button class="icon-btn danger" style="color:var(--accent)" onclick="openDeleteTag(${i})">×</button>
+        </div>`;
+      }).join('');
+
+      c.innerHTML = `
+        <div class="tagmgr-wrap">
+          <div class="tag-add-row">
+            <input type="text" id="tag-add-${containerId}" placeholder="新しいタグ名" onkeydown="tagAddKey(event, '${containerId}')">
+            <button onclick="addTag('${containerId}')">＋ 追加</button>
+          </div>
+          <p class="tag-error" id="tag-err-${containerId}"></p>
+          ${rows || '<div class="empty">タグがありません</div>'}
+        </div>`;
+    }
+
+    function refreshTagUIs() {
+      buildTagManager('tagmgr-page');
+      if (document.getElementById('tag-sheet').classList.contains('open')) {
+        buildTagManager('tagmgr-modal');
+      }
+      renderTagPicker();
+      renderFilterBar();
+    }
+
+    function tagAddKey(e, containerId) {
+      if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addTag(containerId); }
+    }
+
+    function addTag(containerId) {
+      const input = document.getElementById('tag-add-' + containerId);
+      const err = document.getElementById('tag-err-' + containerId);
+      const name = input.value.trim();
+      err.textContent = '';
+      if (!name) { err.textContent = 'タグ名を入力してください'; return; }
+      if (tags.some(t => t.name === name)) { err.textContent = '同じ名前のタグが既にあります'; return; }
+      const maxIdx = tags.reduce((m, t) => Math.max(m, t.colorIndex), -1);
+      tags.push({ name, colorIndex: maxIdx + 1 });
+      saveTags();
+      input.value = '';
+      refreshTagUIs();
+    }
+
+    function startTagEdit(i) { editingTagIndex = i; refreshTagUIs(); focusEdit(); }
+    function cancelTagEdit() { editingTagIndex = null; refreshTagUIs(); }
+    function focusEdit() {
+      // 表示されている方の編集欄にフォーカス
+      const ids = ['tag-edit-tagmgr-modal', 'tag-edit-tagmgr-page'];
+      for (const id of ids) { const el = document.getElementById(id); if (el && el.offsetParent !== null) { el.focus(); break; } }
+    }
+    function saveTagEdit(i, containerId) {
+      const input = document.getElementById('tag-edit-' + containerId);
+      const newName = input.value.trim();
+      const err = document.getElementById('tag-err-' + containerId);
+      if (!newName) { err.textContent = 'タグ名を入力してください'; return; }
+      if (tags.some((t, j) => j !== i && t.name === newName)) { err.textContent = '同じ名前のタグが既にあります'; return; }
+      const oldName = tags[i].name;
+      tags[i].name = newName;
+      // レシピ・選択中タグ・フィルターの参照も更新
+      recipes.forEach(r => { const k = r.tags.indexOf(oldName); if (k >= 0) r.tags[k] = newName; });
+      const fk = formSelectedTags.indexOf(oldName); if (fk >= 0) formSelectedTags[fk] = newName;
+      if (activeFilters.has(oldName)) { activeFilters.delete(oldName); activeFilters.add(newName); }
+      editingTagIndex = null;
+      saveTags(); saveRecipes();
+      refreshTagUIs(); renderRecipes();
+    }
+
+    function openDeleteTag(i) {
+      pendingDeleteTagIndex = i;
+      const name = tags[i].name;
+      const count = recipes.filter(r => r.tags.includes(name)).length;
+      document.getElementById('del-tag-text').innerHTML =
+        `「${escHtml(name)}」を削除します。` +
+        (count > 0 ? `<br>このタグは <b>${count}件</b> のレシピで使用中です。` : '<br>このタグを使用中のレシピはありません。');
+      openSheet('del-tag-sheet');
+    }
+    function confirmDeleteTag() {
+      const i = pendingDeleteTagIndex;
+      if (i == null) return;
+      const name = tags[i].name;
+      tags.splice(i, 1);
+      recipes.forEach(r => { const k = r.tags.indexOf(name); if (k >= 0) r.tags.splice(k, 1); });
+      const fk = formSelectedTags.indexOf(name); if (fk >= 0) formSelectedTags.splice(fk, 1);
+      activeFilters.delete(name);
+      pendingDeleteTagIndex = null;
+      editingTagIndex = null;
+      saveTags(); saveRecipes();
+      closeAllSheets();
+      refreshTagUIs(); renderRecipes();
+    }
+
+    /* ====== レシピ削除 ====== */
+    function openDeleteRecipe(id) {
+      currentRecipeId = id;
+      const r = recipes.find(x => x.id === id);
+      document.getElementById('del-recipe-text').innerHTML =
+        `「${escHtml(r.title)}」を削除します。この操作は取り消せません。`;
+      openSheet('del-recipe-sheet');
+    }
+    function confirmDeleteRecipe() {
+      const idx = recipes.findIndex(x => x.id === currentRecipeId);
+      if (idx >= 0) {
+        delete sessionImages[recipes[idx].id];
+        recipes.splice(idx, 1);
+      }
+      saveRecipes();
+      closeAllSheets();
+      renderRecipes();
+      go('home');
+    }
+
+    /* ====== シート/モーダル制御 ====== */
+    function openSheet(id) {
+      document.getElementById('overlay').classList.add('open');
+      document.getElementById(id).classList.add('open');
+    }
+    function openTagModal() {
+      // タグ管理を開く前にフォーム内容を退避し、閉じたときに復元する
+      addFormCache = getAddFormData();
+      buildTagManager('tagmgr-modal');
+      openSheet('tag-sheet');
+    }
+    function closeAllSheets() {
+      document.getElementById('overlay').classList.remove('open');
+      document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
+      editingTagIndex = null;
+      // モーダルで編集したタグをページ側にも反映
+      buildTagManager('tagmgr-page');
+      // タグ管理モーダルを閉じてもフォームデータを保持する
+      if (addFormCache && currentScreen === 'add') {
+        addFormCache.tags = [...formSelectedTags];   // モーダルでのタグ増減を反映
+        restoreAddForm(addFormCache);
+        addFormCache = null;
+      }
+      renderTagPicker();
+      renderFilterBar();
+    }
+
+    /* ====== ユーティリティ ====== */
+    function escHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function escAttr(s) { return escHtml(s).replace(/'/g, '&#39;'); }
+
+    /* ====== サーバー同期（analyze.py の解析結果を取り込む） ====== */
+    async function syncFromServer() {
+      try {
+        const res = await fetch('./data/recipes.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const incoming = await res.json();
+
+        const existingIds = new Set(recipes.map(r => r.id));
+        let added = 0;
+        (incoming || []).forEach(r => {
+          // idが重複するレシピは上書きせず、新規のみ追加する
+          if (r && r.id && !existingIds.has(r.id)) {
+            recipes.push(r);
+            existingIds.add(r.id);
+            added++;
+          }
+        });
+
+        if (added > 0) {
+          saveRecipes();
+          renderRecipes();
+        }
+        alert(added > 0 ? `${added}件のレシピを同期しました` : '新しいレシピはありませんでした');
+      } catch (e) {
+        alert('同期に失敗しました：' + e.message + '\nサーバーが起動しているか確認してください');
+      }
+    }
+
+    /* ====== 検索バー ====== */
+    document.getElementById('search-input').addEventListener('input', e => {
+      searchText = e.target.value;
+      renderRecipes();
+    });
+
+    /* ====== 初期描画 ====== */
+    renderFilterBar();
+    renderRecipes();
+    buildTagManager('tagmgr-page');
+    renderTagPicker();
+    renderPhotoZone();
+  </script>
+</body>
+</html>

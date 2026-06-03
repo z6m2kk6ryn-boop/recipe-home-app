@@ -1,0 +1,13 @@
+# スクショ画像（容量が大きく公開不要）
+inbox/
+done/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# 環境変数（将来 API キー等を使う場合に備えて）
+.env

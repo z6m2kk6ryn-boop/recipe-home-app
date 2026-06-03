@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Récipe — デザインモック</title>
+  <style>
+    :root {
+      /* ベース */
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --ink: #2c2622;
+      --ink-soft: #6b625b;
+      --ink-faint: #a79d95;
+      --line: #ece7e0;
+      /* アクセント（未作成レシピの左ボーダー・主要ボタン） */
+      --accent: #e07856;
+      --accent-deep: #c75f3e;
+      /* タグ8色パレット */
+      --t0: #e0a87c;
+      --t1: #7fb069;
+      --t2: #6a8eae;
+      --t3: #c98ca5;
+      --t4: #d4a843;
+      --t5: #9b86d8;
+      --t6: #5aa9a3;
+      --t7: #e07a5f;
+      --radius: 16px;
+      --shadow: 0 1px 3px rgba(44, 38, 34, 0.06), 0 8px 24px rgba(44, 38, 34, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Helvetica Neue", sans-serif;
+      background: #efeae3;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== モックギャラリー全体 ===== */
+    .gallery-header {
+      text-align: center;
+      padding: 40px 20px 8px;
+    }
+    .gallery-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .gallery-header p {
+      margin: 8px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+    .palette {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .palette span {
+      width: 22px; height: 22px; border-radius: 50%;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px 40px;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 32px 24px 80px;
+    }
+    .frame-label {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin-bottom: 14px;
+    }
+    .frame-label small {
+      display: block;
+      font-weight: 400;
+      color: var(--ink-faint);
+      margin-top: 2px;
+    }
+
+    /* ===== iPhone フレーム ===== */
+    .iphone {
+      width: 340px;
+      background: #1c1714;
+      border-radius: 46px;
+      padding: 12px;
+      box-shadow: 0 20px 50px rgba(44, 38, 34, 0.25);
+    }
+    .iphone .screen {
+      position: relative;
+      background: var(--bg);
+      border-radius: 36px;
+      overflow: hidden;
+      height: 720px;
+      display: flex;
+      flex-direction: column;
+    }
+    .notch {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 130px; height: 26px;
+      background: #1c1714;
+      border-radius: 0 0 16px 16px;
+      z-index: 50;
+    }
+
+    /* ===== Mac ブラウザフレーム ===== */
+    .browser {
+      width: 720px;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(44, 38, 34, 0.22);
+    }
+    .browser .bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #e9e3db;
+      border-bottom: 1px solid var(--line);
+    }
+    .browser .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .browser .dot.r { background: #ff5f57; }
+    .browser .dot.y { background: #febc2e; }
+    .browser .dot.g { background: #28c840; }
+    .browser .url {
+      flex: 1;
+      margin-left: 10px;
+      background: #faf8f5;
+      border-radius: 7px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      color: var(--ink-faint);
+      text-align: center;
+    }
+    .browser .viewport {
+      height: 700px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ===== アプリ共通 UI ===== */
+    .app { display: flex; flex-direction: column; height: 100%; }
+    .topbar {
+      padding: 38px 18px 12px;
+      background: var(--bg);
+    }
+    .browser .topbar { padding: 22px 26px 14px; }
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .brand .accent { color: var(--accent); }
+
+    .search {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--ink-faint);
+      font-size: 0.9rem;
+    }
+    .search svg { flex: none; }
+
+    .tagbar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 14px 18px 10px;
+      background: var(--bg);
+      scrollbar-width: none;          /* Firefox: スクロールバー非表示 */
+      -ms-overflow-style: none;       /* IE/Edge */
+    }
+    .tagbar::-webkit-scrollbar { display: none; }  /* Safari/Chrome */
+    .browser .tagbar { padding: 14px 26px 4px; }
+    .chip {
+      flex: none;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+    .chip.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* レシピ一覧 */
+    .list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .browser .grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 26px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+    .card.todo { border-left: 6px solid var(--accent); }
+    .card .photo {
+      height: 130px;
+      background-size: cover;
+      background-position: center;
+    }
+    .card .body { padding: 12px 14px 14px; }
+    .card .title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+    .card .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      color: #fff;
+    }
+    .badge-cooked {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--t1);
+      margin-top: 8px;
+    }
+
+    /* 写真プレースホルダ用グラデ */
+    .ph0 { background-image: linear-gradient(135deg,#f3c9a0,#e8a87c); }
+    .ph1 { background-image: linear-gradient(135deg,#bfe0a8,#7fb069); }
+    .ph2 { background-image: linear-gradient(135deg,#a9c7dd,#6a8eae); }
+    .ph3 { background-image: linear-gradient(135deg,#e8bccd,#c98ca5); }
+    .ph4 { background-image: linear-gradient(135deg,#efd79a,#d4a843); }
+    .ph5 { background-image: linear-gradient(135deg,#cabef0,#9b86d8); }
+
+    /* ボトムナビ（iPhone） */
+    .tabbar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      padding: 8px 0 22px;
+    }
+    .tabbar .tab {
+      flex: 1;
+      text-align: center;
+      font-size: 0.66rem;
+      color: var(--ink-faint);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .tabbar .tab.on { color: var(--accent); }
+    .tabbar .tab .ic { font-size: 1.15rem; line-height: 1; }
+
+    /* ===== レシピ詳細 ===== */
+    .detail { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+    .detail .hero {
+      height: 230px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .detail .back {
+      position: absolute;
+      top: 44px; left: 14px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow);
+    }
+    .detail .content { padding: 18px; }
+    .detail h2 { margin: 0 0 10px; font-size: 1.4rem; }
+    .detail .tags { display: flex; gap: 6px; margin-bottom: 18px; }
+    .section-h {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 22px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-h::before {
+      content: "";
+      width: 4px; height: 16px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    ul.ing, ol.steps { margin: 0; padding-left: 0; list-style: none; }
+    ul.ing li {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 2px;
+      border-bottom: 1px dashed var(--line);
+      font-size: 0.9rem;
+    }
+    ul.ing li span:last-child { color: var(--ink-soft); }
+    ol.steps li {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    ol.steps li .n {
+      flex: none;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .memo-box {
+      background: #fff8f1;
+      border: 1px solid #f3e3d3;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+    .detail-actions {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px 26px;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+    }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #fff; flex: 1; }
+    .btn-cooked { background: var(--t1); color: #fff; flex: 1; }
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--ink-soft);
+      border: 1px solid var(--line);
+      flex: none;
+      width: 52px;
+    }
+
+    /* ===== レシピ登録（Mac） ===== */
+    .register { padding: 8px 26px 30px; overflow-y: auto; height: 100%; }
+    .reg-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .uploader {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dropzone {
+      border: 2px dashed #d9cbbd;
+      border-radius: 14px;
+      background: #fff;
+      padding: 20px 12px;
+      text-align: center;
+      color: var(--ink-faint);
+      font-size: 0.82rem;
+    }
+    .dropzone .ic { font-size: 1.6rem; }
+    .thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .thumbs .th {
+      width: 54px; height: 54px;
+      border-radius: 9px;
+      background-size: cover;
+    }
+    .analyze {
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+    }
+    .field input, .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    .field textarea { resize: none; line-height: 1.6; }
+    .tag-pick { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag-pick .chip { cursor: pointer; }
+    .reg-save {
+      margin-top: 8px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .hint { font-size: 0.72rem; color: var(--ink-faint); margin-top: 6px; }
+
+    /* ===== タグ管理 ===== */
+    .tagmgr { flex: 1; overflow-y: auto; padding: 8px 18px 90px; }
+    .tag-add {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .tag-add input {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 13px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    .tag-add button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tag-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+    }
+    .tag-row .swatch { width: 16px; height: 16px; border-radius: 50%; flex: none; }
+    .tag-row .nm { flex: 1; font-weight: 600; font-size: 0.92rem; }
+    .tag-row .act { color: var(--ink-faint); font-size: 0.82rem; }
+    .tag-row .act.del { color: var(--accent-deep); }
+
+    .section-title {
+      padding: 6px 18px 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .browser .section-title { padding: 6px 26px 0; }
+  </style>
+</head>
+<body>
+  <div class="gallery-header">
+    <h1>Récipe — デザインモック</h1>
+    <p>フェーズ2：デザイン承認用モックアップ（ダミーデータ）</p>
+    <div class="palette">
+      <span style="background:var(--t0)"></span>
+      <span style="background:var(--t1)"></span>
+      <span style="background:var(--t2)"></span>
+      <span style="background:var(--t3)"></span>
+      <span style="background:var(--t4)"></span>
+      <span style="background:var(--t5)"></span>
+      <span style="background:var(--t6)"></span>
+      <span style="background:var(--t7)"></span>
+    </div>
+  </div>
+
+  <div class="gallery">
+
+    <!-- ===== 1. ホーム（レシピ一覧）iPhone ===== -->
+    <div>
+      <div class="frame-label">① ホーム・レシピ一覧<small>iPhone Safari</small></div>
+      <div class="iphone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                料理名・食材・メモで検索
+              </div>
+            </div>
+            <div class="tagbar">
+              <div class="chip on">すべて</div>
+              <div class="chip">ヘルシー</div>
+              <div class="chip">時短</div>
+              <div class="chip">作り置き</div>
+              <div class="chip">和食</div>
+            </div>
+            <div class="list">
+              <div class="card todo">
+                <div class="photo ph0"></div>
+                <div class="body">
+                  <p class="title">鶏むね肉の照り焼き</p>
+                  <div class="tags">
+                    <span class="tag" style="background:var(--t1)">ヘルシー</span>
+                    <span class="tag" style="background:var(--t4)">時短</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="photo ph1"></div>
+                <div class="body">
+                  <p class="title">ほうれん草の白和え</p>
+                  <div class="tags">
+                    <span class="tag" style="background:var(--t6)">和食</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card todo">
+                <div class="photo ph3"></div>
+                <div class="body">
+                  <p class="title">トマトとモッツァレラのカプレーゼ</p>
+                  <div class="tags">
+                    <span class="tag" style="background:var(--t2)">作り置き</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab on"><span class="ic">🏠</span>ホーム</div>
+              <div class="tab"><span class="ic">＋</span>追加</div>
+              <div class="tab"><span class="ic">🏷</span>タグ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 2. レシピ詳細 iPhone ===== -->
+    <div>
+      <div class="frame-label">② レシピ詳細<small>iPhone Safari</small></div>
+      <div class="iphone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="app">
+            <div class="detail">
+              <div class="hero ph0">
+                <div class="back">‹</div>
+              </div>
+              <div class="content">
+                <h2>鶏むね肉の照り焼き</h2>
+                <div class="tags">
+                  <span class="tag" style="background:var(--t1)">ヘルシー</span>
+                  <span class="tag" style="background:var(--t4)">時短</span>
+                </div>
+
+                <div class="section-h">材料（2人分）</div>
+                <ul class="ing">
+                  <li><span>鶏むね肉</span><span>1枚（300g）</span></li>
+                  <li><span>醤油</span><span>大さじ2</span></li>
+                  <li><span>みりん</span><span>大さじ2</span></li>
+                  <li><span>砂糖</span><span>大さじ1</span></li>
+                  <li><span>片栗粉</span><span>適量</span></li>
+                </ul>
+
+                <div class="section-h">手順</div>
+                <ol class="steps">
+                  <li><span class="n">1</span><span>鶏むね肉を一口大のそぎ切りにし、片栗粉をまぶす。</span></li>
+                  <li><span class="n">2</span><span>フライパンに油を熱し、中火で両面を焼く。</span></li>
+                  <li><span class="n">3</span><span>醤油・みりん・砂糖を加え、絡めながら煮詰める。</span></li>
+                </ol>
+
+                <div class="section-h">メモ</div>
+                <div class="memo-box">むね肉は焼きすぎると固くなるので、タレを絡める前に一度取り出すとしっとり仕上がる。</div>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <button class="btn btn-cooked">✓ 作った</button>
+              <button class="btn btn-ghost">✎</button>
+              <button class="btn btn-ghost">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 3. タグ管理 iPhone ===== -->
+    <div>
+      <div class="frame-label">③ タグ管理<small>iPhone Safari</small></div>
+      <div class="iphone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="brand">タグ管理</div>
+            </div>
+            <div class="tagmgr">
+              <div class="tag-add">
+                <input placeholder="新しいタグ名を入力" value="">
+                <button>＋ 追加</button>
+              </div>
+              <div class="tag-row"><span class="swatch" style="background:var(--t0)"></span><span class="nm">ヘルシー</span><span class="act">編集</span><span class="act del">削除</span></div>
+              <div class="tag-row"><span class="swatch" style="background:var(--t1)"></span><span class="nm">時短</span><span class="act">編集</span><span class="act del">削除</span></div>
+              <div class="tag-row"><span class="swatch" style="background:var(--t2)"></span><span class="nm">作り置き</span><span class="act">編集</span><span class="act del">削除</span></div>
+              <div class="tag-row"><span class="swatch" style="background:var(--t3)"></span><span class="nm">和食</span><span class="act">編集</span><span class="act del">削除</span></div>
+              <div class="tag-row"><span class="swatch" style="background:var(--t4)"></span><span class="nm">おもてなし</span><span class="act">編集</span><span class="act del">削除</span></div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><span class="ic">🏠</span>ホーム</div>
+              <div class="tab"><span class="ic">＋</span>追加</div>
+              <div class="tab on"><span class="ic">🏷</span>タグ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 4. レシピ登録（Mac） ===== -->
+    <div>
+      <div class="frame-label">④ レシピ登録（スクショ解析）<small>Mac Safari</small></div>
+      <div class="browser">
+        <div class="bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url">192.168.40.16:8080</span>
+        </div>
+        <div class="viewport">
+          <div class="app">
+            <div class="topbar">
+              <div class="brand">R<span class="accent">é</span>cipe <span style="font-size:0.9rem;font-weight:600;color:var(--ink-soft);">／ レシピを追加</span></div>
+            </div>
+            <div class="register">
+              <div class="reg-grid">
+                <!-- 左：画像アップロード -->
+                <div class="uploader">
+                  <div class="field" style="margin-bottom:8px;">
+                    <label>料理写真（1枚のみ）</label>
+                    <div class="dropzone">
+                      <div class="ic">📷</div>
+                      ドラッグ＆ドロップ<br>または クリックで選択
+                    </div>
+                  </div>
+                  <div class="field" style="margin-bottom:8px;">
+                    <label>レシピのスクショ（複数可）</label>
+                    <div class="dropzone">
+                      <div class="ic">📷</div>
+                      ドラッグ＆ドロップ<br>または クリックで選択
+                    </div>
+                  </div>
+                  <div class="thumbs">
+                    <div class="th ph1"></div>
+                    <div class="th ph2"></div>
+                    <div class="th ph4"></div>
+                  </div>
+                  <button class="analyze">✨ まとめて読み取る</button>
+                  <p class="hint">スクショをClaudeが解析し、右のフォームに自動展開します</p>
+                </div>
+
+                <!-- 右：フォーム -->
+                <div>
+                  <div class="field">
+                    <label>料理名</label>
+                    <input value="鶏むね肉の照り焼き">
+                  </div>
+                  <div class="field">
+                    <label>材料（1行に1つ）</label>
+                    <textarea rows="4">鶏むね肉 1枚（300g）
+醤油 大さじ2
+みりん 大さじ2
+砂糖 大さじ1</textarea>
+                  </div>
+                  <div class="field">
+                    <label>手順（1行に1つ）</label>
+                    <textarea rows="3">鶏むね肉をそぎ切りにし片栗粉をまぶす
+中火で両面を焼く
+調味料を加え絡めながら煮詰める</textarea>
+                  </div>
+                  <div class="field">
+                    <label>メモ</label>
+                    <textarea rows="2">焼きすぎると固くなるので注意。</textarea>
+                  </div>
+                  <div class="field">
+                    <label>タグ（最大3つ）</label>
+                    <div class="tag-pick">
+                      <span class="chip on">ヘルシー</span>
+                      <span class="chip on">時短</span>
+                      <span class="chip">作り置き</span>
+                      <span class="chip">和食</span>
+                      <span class="chip">おもてなし</span>
+                    </div>
+                  </div>
+                  <div class="reg-save">
+                    <button class="btn btn-ghost" style="width:auto;padding:13px 20px;">キャンセル</button>
+                    <button class="btn btn-primary" style="flex:none;padding:13px 28px;">保存</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
